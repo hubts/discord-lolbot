@@ -3,8 +3,11 @@ import { Module } from "@nestjs/common";
 import * as dotenv from "dotenv";
 import { GatewayIntentBits } from "discord.js";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { AppService } from "./app.service";
 import { Summoner } from "@entity";
+import { AppController } from "./app.controller";
+import { CqrsModule } from "@nestjs/cqrs";
+import { CommandHandlers } from "@command";
+import { RiotService } from "./service";
 
 dotenv.config({
     path: ".env",
@@ -12,6 +15,7 @@ dotenv.config({
 
 @Module({
     imports: [
+        TypeOrmModule.forFeature([Summoner]),
         DiscordModule.forRootAsync({
             useFactory: () => ({
                 token: process.env.BOT_TOKEN,
@@ -42,8 +46,15 @@ dotenv.config({
                 autoLoadEntities: true,
             }),
         }),
-        TypeOrmModule.forFeature([Summoner]),
+        CqrsModule,
     ],
-    providers: [AppService],
+    controllers: [AppController],
+    providers: [
+        {
+            provide: "RiotService",
+            useClass: RiotService,
+        },
+        ...CommandHandlers,
+    ],
 })
 export class AppModule {}

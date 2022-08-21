@@ -17,37 +17,29 @@ export class Summoner {
 
     @Column({
         name: "user_id",
+        unique: true,
     })
     userId: string;
 
     @Column({
         name: "username",
+        unique: true,
     })
     username: string;
 
     @Column({
         name: "nickname",
+        unique: true,
     })
     nickname: string;
 
     @Column({
-        name: "first_lane",
+        name: "main_lane",
     })
-    firstLane: string;
+    mainLane: string;
 
     @Column({
-        name: "second_lane",
+        name: "sub_lane",
     })
-    secondLane: string;
-
-    @Column({
-        name: "third_lane",
-    })
-    thirdLane: string;
-
-    public static of(params: Partial<Summoner>): Summoner {
-        const summoner = new Summoner();
-        Object.assign(summoner, params);
-        return summoner;
-    }
+    subLane: string;
 }

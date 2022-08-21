@@ -23,8 +23,12 @@
             "@entity/*": ["src/entity/*"],
             "@dto": ["src/dto"],
             "@dto/*": ["src/dto/*"],
-            "@handler": ["src/handler"],
-            "@handler/*": ["src/handler/*"]
+            "@command": ["src/command"],
+            "@command/*": ["src/command/*"],
+            "@enum": ["src/enum"],
+            "@enum/*": ["src/enum/*"],
+            "@util": ["src/util"],
+            "@util/*": ["src/util/*"]
         }
     }
 }
