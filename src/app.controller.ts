@@ -16,8 +16,8 @@ import {
     runOnTransactionRollback,
     Transactional,
 } from "typeorm-transactional-cls-hooked";
-import { RegisterCommand } from "./command";
-import { RegisterDto } from "./dto";
+import { RegisterCommand, SearchCommand } from "@command";
+import { RegisterDto, SearchDto } from "@dto";
 
 @Controller()
 export class AppController {
@@ -42,16 +42,43 @@ export class AppController {
     async onRegister(
         @Payload() dto: RegisterDto,
         message: Message
-    ): Promise<void> {
+    ): Promise<MessageOptions | string> {
         try {
             const command = new RegisterCommand(message, dto);
             const result: MessageOptions | string =
                 await this.commandBus.execute(command);
             runOnTransactionCommit(() => {});
-            await message.reply(result);
+            if (!result) {
+                return "명령어 처리에 실패하였습니다.";
+            }
+            return result;
         } catch (error) {
             runOnTransactionRollback(() => {});
-            await message.reply(error);
+            return error.message;
+        } finally {
+            runOnTransactionComplete(() => {});
+        }
+    }
+
+    @Transactional()
+    @PrefixCommand("정보")
+    @UsePipes(PrefixCommandTransformPipe)
+    async onMyInfo(
+        @Payload() dto: SearchDto,
+        message: Message
+    ): Promise<MessageOptions | string> {
+        try {
+            const command = new SearchCommand(message, dto);
+            const result: MessageOptions | string =
+                await this.commandBus.execute(command);
+            runOnTransactionCommit(() => {});
+            if (!result) {
+                return "명령어 처리에 실패하였습니다.";
+            }
+            return result;
+        } catch (error) {
+            runOnTransactionRollback(() => {});
+            return error.message;
         } finally {
             runOnTransactionComplete(() => {});
         }

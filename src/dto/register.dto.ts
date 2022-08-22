@@ -5,8 +5,8 @@ export class RegisterDto {
     nicknameSplited: string[];
 
     @ArgRange(last => ({ formPosition: last, toPosition: last + 1 }))
-    mainLaneArray: string[];
+    mainLaneInArray: string[];
 
     @ArgRange(last => ({ formPosition: last }))
-    subLaneArray: string[];
+    subLaneInArray: string[];
 }
