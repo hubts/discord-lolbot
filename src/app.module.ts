@@ -3,7 +3,7 @@ import { Module } from "@nestjs/common";
 import * as dotenv from "dotenv";
 import { GatewayIntentBits } from "discord.js";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Game, Summoner } from "@entity";
+import { Game, Player, Summoner } from "@entity";
 import { AppController } from "./app.controller";
 import { CqrsModule } from "@nestjs/cqrs";
 import { CommandHandlers } from "@command";
@@ -15,7 +15,7 @@ dotenv.config({
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Summoner, Game]),
+        TypeOrmModule.forFeature([Summoner, Game, Player]),
         DiscordModule.forRootAsync({
             useFactory: () => ({
                 token: process.env.BOT_TOKEN,

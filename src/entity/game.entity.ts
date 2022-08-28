@@ -2,8 +2,12 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
 } from "typeorm";
+import { Player } from "./player.entity";
+import { Summoner } from "./summoner.entity";
 
 @Entity("game")
 export class Game {
@@ -14,11 +18,6 @@ export class Game {
         name: "created_at",
     })
     createdAt: Date;
-
-    @Column({
-        name: "user_id_created_by",
-    })
-    userIdCreatedBy: string;
 
     @Column({
         name: "title",
@@ -32,10 +31,18 @@ export class Game {
     description: string;
 
     @Column({
-        name: "user_id_entries",
-        type: "text",
-        array: true,
-        default: [],
+        name: "is_finished",
+        default: false,
     })
-    userIdEntries: string[];
+    isFinished: boolean;
+
+    @ManyToOne(() => Summoner, summoner => summoner.games, {
+        onDelete: "SET NULL",
+    })
+    creator: Summoner;
+
+    @OneToMany(() => Player, player => player.game, {
+        nullable: true,
+    })
+    players: Player[];
 }

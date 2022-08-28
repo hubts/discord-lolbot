@@ -8,6 +8,7 @@ import { Message, EmbedBuilder, MessageOptions } from "discord.js";
 import { LaneEnums } from "@enum";
 import { strToEmbed } from "@util";
 import { RiotService } from "src/service";
+import { ErrorMessage } from "src/interface";
 
 export class RegisterCommand implements ICommand {
     constructor(
@@ -37,13 +38,13 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
 
         // 라인 입력 검사
         if (!LaneEnums.includes(mainLane) || !LaneEnums.includes(subLane)) {
-            return "잘못된 라인 정보입니다. 탑/정글/미드/원딜/서폿 중 하나로 작성해주세요.";
+            return ErrorMessage.LANES_UNSUPPORTED;
         }
 
         // Riot ID 검색
         const riotSummoner = await this.riotService.getSummonerByName(nickname);
         if (!riotSummoner) {
-            return "소환사 검색에 실패하였습니다.";
+            return ErrorMessage.SUMMONER_GET_FAILED;
         }
         // Riot 랭크 검색
         const riotSummonerRank = await this.riotService.getSummonerRankById(
@@ -56,15 +57,15 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
                 userId: author.id,
             },
         });
-        if (summoner && summoner.userId !== author.id) {
-            return "다른 사람의 소환사 정보를 수정할 수 없습니다.";
+        if (summoner && summoner.authorId !== author.id) {
+            return ErrorMessage.SUMMONER_UPDATE_UNAUTHORIZED;
         }
 
         // 소환사 정보 업데이트
         const newSummoner = this.summonerRepo.create({
             ...summoner,
-            userId: author.id,
-            username: author.username,
+            authorId: author.id,
+            authorName: author.username,
             nickname: nickname,
             mainLane,
             subLane,

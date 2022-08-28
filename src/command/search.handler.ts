@@ -7,6 +7,7 @@ import { Message, EmbedBuilder, MessageOptions } from "discord.js";
 import { strToEmbed } from "@util";
 import { RiotService } from "src/service";
 import { SearchDto } from "@dto";
+import { ErrorMessage } from "src/interface";
 
 export class SearchCommand implements ICommand {
     constructor(
@@ -29,15 +30,14 @@ export class SearchHandler implements ICommandHandler<SearchCommand> {
     async execute(command: SearchCommand): Promise<MessageOptions | string> {
         const { nicknameSplited } = command.dto;
         const { author } = command.message;
-        console.log(nicknameSplited);
         let nickname = nicknameSplited.join(" ");
 
         // 자신의 소환사 닉네임 검색
         const summoner = await this.summonerRepo.findOne({
-            userId: author.id,
+            authorId: author.id,
         });
         if (!nickname && !summoner) {
-            return "검색할 소환사명을 입력하거나, 사용자의 소환사 정보를 등록해주세요.";
+            return ErrorMessage.SUMMONER_NOT_FOUND_OR_NOT_INSERTED;
         }
 
         // 검색할 소환사 닉네임 결정
@@ -51,7 +51,7 @@ export class SearchHandler implements ICommandHandler<SearchCommand> {
         // Riot ID 검색
         const riotSummoner = await this.riotService.getSummonerByName(nickname);
         if (!riotSummoner) {
-            return "소환사 검색에 실패하였습니다.";
+            return ErrorMessage.SUMMONER_GET_FAILED;
         }
         // Riot 랭크 검색
         const riotSummonerRank = await this.riotService.getSummonerRankById(

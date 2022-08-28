@@ -16,8 +16,8 @@ import {
     runOnTransactionRollback,
     Transactional,
 } from "typeorm-transactional-cls-hooked";
-import { RegisterCommand, SearchCommand } from "@command";
-import { RegisterDto, SearchDto } from "@dto";
+import { HoldCommand, RegisterCommand, SearchCommand } from "@command";
+import { HoldDto, RegisterDto, SearchDto } from "@dto";
 
 @Controller()
 export class AppController {
@@ -63,12 +63,36 @@ export class AppController {
     @Transactional()
     @PrefixCommand("정보")
     @UsePipes(PrefixCommandTransformPipe)
-    async onMyInfo(
+    async onSearch(
         @Payload() dto: SearchDto,
         message: Message
     ): Promise<MessageOptions | string> {
         try {
             const command = new SearchCommand(message, dto);
+            const result: MessageOptions | string =
+                await this.commandBus.execute(command);
+            runOnTransactionCommit(() => {});
+            if (!result) {
+                return "명령어 처리에 실패하였습니다.";
+            }
+            return result;
+        } catch (error) {
+            runOnTransactionRollback(() => {});
+            return error.message;
+        } finally {
+            runOnTransactionComplete(() => {});
+        }
+    }
+
+    @Transactional()
+    @PrefixCommand("개최")
+    @UsePipes(PrefixCommandTransformPipe)
+    async onOpenGame(
+        @Payload() dto: HoldDto,
+        message: Message
+    ): Promise<MessageOptions | string> {
+        try {
+            const command = new HoldCommand(message, dto);
             const result: MessageOptions | string =
                 await this.commandBus.execute(command);
             runOnTransactionCommit(() => {});
