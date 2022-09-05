@@ -1,4 +1,10 @@
 export interface SummonerRank {
-    solo: string;
-    flex: string;
+    solo: {
+        tier: string;
+        rank: string;
+    };
+    flex: {
+        tier: string;
+        rank: string;
+    };
 }

@@ -107,4 +107,28 @@ export class AppController {
             runOnTransactionComplete(() => {});
         }
     }
+
+    // @Transactional()
+    // @PrefixCommand("취소")
+    // @UsePipes(PrefixCommandTransformPipe)
+    // async onCancelGame(
+    //     @Payload() dto: CancelDto,
+    //     message: Message
+    // ): Promise<MessageOptions | string> {
+    //     try {
+    //         const command = new HoldCommand(message, dto);
+    //         const result: MessageOptions | string =
+    //             await this.commandBus.execute(command);
+    //         runOnTransactionCommit(() => {});
+    //         if (!result) {
+    //             return "명령어 처리에 실패하였습니다.";
+    //         }
+    //         return result;
+    //     } catch (error) {
+    //         runOnTransactionRollback(() => {});
+    //         return error.message;
+    //     } finally {
+    //         runOnTransactionComplete(() => {});
+    //     }
+    // }
 }

@@ -6,6 +6,7 @@ import { Repository } from "typeorm";
 import { Message, EmbedBuilder, MessageOptions } from "discord.js";
 import { HoldDto } from "@dto";
 import { ErrorMessage } from "src/interface";
+import { getProfileIconById } from "@util";
 
 export class HoldCommand implements ICommand {
     constructor(
@@ -26,9 +27,13 @@ export class HoldHandler implements ICommandHandler<HoldCommand> {
     ) {}
 
     async execute(command: HoldCommand): Promise<MessageOptions | string> {
-        const { title, descriptionSplited } = command.dto;
+        const { description } = command.dto;
         const { author } = command.message;
-        const description = descriptionSplited.join(" ");
+
+        // Description 길이 확인
+        if (!description.length) {
+            return "내전에 대한 설명을 작성해주세요.";
+        }
 
         // 개최자 Summoner 가져오기
         const summoner = await this.summonerRepo.findOne({
@@ -40,11 +45,12 @@ export class HoldHandler implements ICommandHandler<HoldCommand> {
 
         // 현재 진행중인 Game 가져오기
         const existingGame = await this.gameRepo.findOne({
-            relations: ["summoner"],
+            relations: ["creator"],
             where: {
                 isFinished: false,
             },
         });
+        this.logger.log(JSON.stringify(existingGame));
         if (
             existingGame &&
             existingGame.creator.authorId !== summoner.authorId
@@ -55,31 +61,32 @@ export class HoldHandler implements ICommandHandler<HoldCommand> {
         // Game 생성하기
         const newOrUpdatedGame = this.gameRepo.create({
             ...existingGame,
-            title,
-            description,
+            title: `(${summoner.nickname})님의 내전`,
+            description: description.join(" "),
             creator: summoner,
-            players: [],
+            players: existingGame ? existingGame.players : [],
         });
+        this.logger.log(JSON.stringify(newOrUpdatedGame));
 
         // Game 저장하기
+        let savedGame: Game;
         try {
-            await this.gameRepo.save(newOrUpdatedGame);
+            savedGame = await this.gameRepo.save(newOrUpdatedGame);
         } catch (error) {
             throw new Error(`저장 실패: ${error}`);
         }
 
         // 결과
-        const thumbnail = `http://ddragon.leagueoflegends.com/cdn/12.15.1/img/profileicon/1.png`;
-        let embed = new EmbedBuilder()
+        const thumbnail = getProfileIconById(1);
+        const embed = new EmbedBuilder()
             .setColor("DarkGreen")
-            .setTitle(title)
-            .setThumbnail(thumbnail);
-        if (description) {
-            embed = embed.addFields({
-                name: "내용",
-                value: description,
+            .setTitle(savedGame.title)
+            .setThumbnail(thumbnail)
+            .addFields({
+                name: "🗒 설명",
+                value: savedGame.description,
             });
-        }
+
         this.logger.log(`New game by "${summoner.nickname}" held/updated`);
         return {
             embeds: [embed],

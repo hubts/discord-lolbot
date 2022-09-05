@@ -27,6 +27,12 @@
             "@command/*": ["src/command/*"],
             "@enum": ["src/enum"],
             "@enum/*": ["src/enum/*"],
+            "@service": ["src/service"],
+            "@service/*": ["src/service/*"],
+            "@interface": ["src/interface"],
+            "@interface/*": ["src/interface/*"],
+            "@domain": ["src/domain"],
+            "@domain/*": ["src/domain/*"],
             "@util": ["src/util"],
             "@util/*": ["src/util/*"]
         }

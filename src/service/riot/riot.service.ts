@@ -1,4 +1,4 @@
-import { EmbedEnum, QueueTypeEnum } from "@enum";
+import { QueueTypeEnum } from "@enum";
 import { Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
 import { LeagueEntry, Summoner, SummonerRank } from "./interface";
@@ -31,21 +31,19 @@ export class RiotService {
             const data: LeagueEntry[] = await this.getDataByUrl(url);
             const soloRank = data.filter(
                 rank => rank.queueType === QueueTypeEnum.RANKED_SOLO
-            );
+            )[0];
             const flexRank = data.filter(
                 rank => rank.queueType === QueueTypeEnum.RANKED_FLEX
-            );
+            )[0];
             return {
-                solo: soloRank.length
-                    ? `${EmbedEnum[soloRank[0].tier]} ${soloRank[0].tier} ${
-                          soloRank[0].rank
-                      }`
-                    : "정보 없음",
-                flex: flexRank.length
-                    ? `${EmbedEnum[flexRank[0].tier]} ${flexRank[0].tier} ${
-                          flexRank[0].rank
-                      }`
-                    : "정보 없음",
+                solo: {
+                    tier: soloRank ? soloRank.tier : null,
+                    rank: soloRank ? soloRank.rank : null,
+                },
+                flex: {
+                    tier: flexRank ? flexRank.tier : null,
+                    rank: flexRank ? flexRank.rank : null,
+                },
             };
         } catch (error) {
             this.logger.error(`"${id}" searched: ${error}`);

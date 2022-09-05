@@ -36,6 +36,12 @@ export class Game {
     })
     isFinished: boolean;
 
+    @Column({
+        name: "is_canceled",
+        default: false,
+    })
+    isCanceled: boolean;
+
     @ManyToOne(() => Summoner, summoner => summoner.games, {
         onDelete: "SET NULL",
     })

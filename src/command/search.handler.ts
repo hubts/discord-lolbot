@@ -3,11 +3,11 @@ import { Inject, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Summoner } from "@entity";
 import { Repository } from "typeorm";
-import { Message, EmbedBuilder, MessageOptions } from "discord.js";
-import { strToEmbed } from "@util";
+import { Message, MessageOptions } from "discord.js";
 import { RiotService } from "src/service";
 import { SearchDto } from "@dto";
 import { ErrorMessage } from "src/interface";
+import { getSummonerEmbed } from "src/domain";
 
 export class SearchCommand implements ICommand {
     constructor(
@@ -59,41 +59,15 @@ export class SearchHandler implements ICommandHandler<SearchCommand> {
         );
 
         // 결과
-        const title = `"${nickname}" 소환사 정보가 검색되었습니다.`;
-        const thumbnail = `http://ddragon.leagueoflegends.com/cdn/12.15.1/img/profileicon/${riotSummoner.profileIconId}.png`;
-        const soloRankText = riotSummonerRank.solo;
-        const flexRankText = riotSummonerRank.flex;
-        const mainLaneText = searchingSummoner
-            ? `${strToEmbed(searchingSummoner.mainLane)} ${
-                  searchingSummoner.mainLane
-              }`
-            : "정보 없음";
-        const subLaneText = searchingSummoner
-            ? `${strToEmbed(searchingSummoner.subLane)} ${
-                  searchingSummoner.subLane
-              }`
-            : "정보 없음";
-        const embed = new EmbedBuilder()
-            .setColor("DarkGreen")
-            .setTitle(title)
-            .setThumbnail(thumbnail)
-            .addFields(
-                {
-                    name: "<솔로랭크>",
-                    value: soloRankText,
-                    inline: true,
-                },
-                {
-                    name: "<자유랭크>",
-                    value: flexRankText,
-                    inline: true,
-                }
-            )
-            .addFields({
-                name: "<라인 선호도>",
-                value: `${mainLaneText} / ${subLaneText}`,
-                inline: false,
-            });
+        const embed = getSummonerEmbed({
+            nickname,
+            profileIconId: riotSummoner.profileIconId,
+            mainLane: searchingSummoner ? searchingSummoner.mainLane : null,
+            subLane: searchingSummoner ? searchingSummoner.subLane : null,
+            solo: riotSummonerRank.solo,
+            flex: riotSummonerRank.flex,
+        });
+
         this.logger.log(`New summoner "${nickname}" Searched/updated`);
         return {
             embeds: [embed],
